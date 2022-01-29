@@ -5,7 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
+)
+
+var (
+	templateRe      = regexp.MustCompile(`^\/templates\/params\/(\d+)`)
+	templateReQuery = regexp.MustCompile(`^\/templates\/params\/(\d+)\?categoryId=([a-z0-9\-]+)\&?`)
 )
 
 func TestGetTemplatesParamsMock(t *testing.T) {
@@ -14,9 +20,15 @@ func TestGetTemplatesParamsMock(t *testing.T) {
 
 	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
 
-	mux.HandleFunc("/templates/params/", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodGet)
-		fmt.Fprint(w, `{"success":true,"message":"Successfully found the template parameters.","data":{"categories":[{"name":"AMP Cloud","id":"6ba90b8c-0340-44fe-82c4-4bc32e51a316"},{"name":"Communications","id":"ca8958a4-8c21-4f82-af4a-58a66ac36e4a"}],"count":2,"rows":[{"id":950024,"type":"STRING","tag":"CLOUD.AUTHCODE","name":"CLOUD.AUTHCODE","hint":"","validator":"","value":"testtoken","defaultValue":"testtoken","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"6ba90b8c-0340-44fe-82c4-4bc32e51a316","categoryName":"AMP Cloud","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"},{"id":950047,"type":"STRING","tag":"COMMUNICATIONS.MEDIA.PRIMARY","name":"COMMUNICATIONS.MEDIA.PRIMARY","hint":"","validator":"","value":"CELLULAR","defaultValue":"CELLULAR","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"ca8958a4-8c21-4f82-af4a-58a66ac36e4a","categoryName":"Communications","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"}]}}`)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if !templateRe.MatchString(r.URL.Path) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
+			t.Errorf("Bad URL got %v", r.URL.Path)
+		} else {
+			testMethod(t, r, http.MethodGet)
+			fmt.Fprint(w, `{"success":true,"message":"Successfully found the template parameters.","data":{"categories":[{"name":"AMP Cloud","id":"6ba90b8c-0340-44fe-82c4-4bc32e51a316"},{"name":"Communications","id":"ca8958a4-8c21-4f82-af4a-58a66ac36e4a"}],"count":2,"rows":[{"id":950024,"type":"STRING","tag":"CLOUD.AUTHCODE","name":"CLOUD.AUTHCODE","hint":"","validator":"","value":"testtoken","defaultValue":"testtoken","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"6ba90b8c-0340-44fe-82c4-4bc32e51a316","categoryName":"AMP Cloud","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"},{"id":950047,"type":"STRING","tag":"COMMUNICATIONS.MEDIA.PRIMARY","name":"COMMUNICATIONS.MEDIA.PRIMARY","hint":"","validator":"","value":"CELLULAR","defaultValue":"CELLULAR","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"ca8958a4-8c21-4f82-af4a-58a66ac36e4a","categoryName":"Communications","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"}]}}`)
+		}
 	})
 
 	tp := TemplateParams{}
@@ -51,15 +63,22 @@ func TestGetTemplatesParamsQueryMock(t *testing.T) {
 
 	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
 
-	mux.HandleFunc("/templates/params/", func(w http.ResponseWriter, r *http.Request) {
-		url, _ := r.URL.Parse(r.URL.Path)
-		testMethod(t, r, http.MethodGet)
-		values := url.Query().Get("categoryId")
-		want := "value1"
-		if values != want {
-			t.Errorf("invalid query received %v, want %v", values, want)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if !templateReQuery.MatchString(r.URL.Path) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
+			t.Errorf("Bad URL got %v", r.URL.Path)
+		} else {
+			url, _ := r.URL.Parse(r.URL.Path)
+			testMethod(t, r, http.MethodGet)
+			values := url.Query().Get("categoryId")
+			want := "value1"
+			if values != want {
+				t.Errorf("invalid query received %v, want %v", values, want)
+			}
+			fmt.Fprint(w, `{"success":true,"message":"Successfully found the template parameters.","data":{"categories":[{"name":"AMP Cloud","id":"6ba90b8c-0340-44fe-82c4-4bc32e51a316"}],"count":1,"rows":[{"id":950024,"type":"STRING","tag":"CLOUD.AUTHCODE","name":"CLOUD.AUTHCODE","hint":"","validator":"","value":"testtoken","defaultValue":"testtoken","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"6ba90b8c-0340-44fe-82c4-4bc32e51a316","categoryName":"AMP Cloud","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"}]}}`)
 		}
-		fmt.Fprint(w, `{"success":true,"message":"Successfully found the template parameters.","data":{"categories":[{"name":"AMP Cloud","id":"6ba90b8c-0340-44fe-82c4-4bc32e51a316"}],"count":1,"rows":[{"id":950024,"type":"STRING","tag":"CLOUD.AUTHCODE","name":"CLOUD.AUTHCODE","hint":"","validator":"","value":"testtoken","defaultValue":"testtoken","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"6ba90b8c-0340-44fe-82c4-4bc32e51a316","categoryName":"AMP Cloud","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"}]}}`)
+
 	})
 
 	tp := TemplateParams{}
