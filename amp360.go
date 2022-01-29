@@ -43,6 +43,7 @@ func NewClient(defaultBaseURL string, httpClient *http.Client) *Client {
 	c.TemplatesService = &TemplatesService{client: c}
 	c.CompaniesService = &CompaniesService{client: c}
 	c.ModelsService = &ModelsService{client: c}
+	c.TerminalsService = &TerminalsService{client: c}
 	return c
 }
 
@@ -57,6 +58,7 @@ type Client struct {
 	TemplatesService *TemplatesService
 	CompaniesService *CompaniesService
 	ModelsService    *ModelsService
+	TerminalsService *TerminalsService
 }
 
 type service struct {
