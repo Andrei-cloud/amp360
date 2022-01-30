@@ -3,6 +3,7 @@ package amp360
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -45,6 +46,28 @@ type TerminalsOpt struct {
 	Page int `url:"page"`
 }
 
+type NewTerminal struct {
+	ModelID      string                 `json:"modelId"`
+	SerialNumber string                 `json:"serialNumber"`
+	Name         string                 `json:"name"`
+	ClientID     string                 `json:"clientId,omitempty"`
+	TemplateID   string                 `json:"templateId,omitempty"`
+	Parameters   map[string]interface{} `json:"parameters"`
+}
+
+type CreatedTerminal struct {
+	ID              int       `json:"id"`
+	AppTemplateID   int       `json:"AppTemplateId"`
+	ClientID        string    `json:"ClientId"`
+	FirmwareID      string    `json:"FirmwareId"`
+	TerminalModelID string    `json:"TerminalModelId"`
+	SerialNumber    string    `json:"serialNumber"`
+	Name            string    `json:"name"`
+	Status          string    `json:"status"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+}
+
 func (c *TerminalsService) GetTerminalsList(ctx context.Context, opt interface{}, v interface{}) (err error) {
 	path := "terminals"
 	if path, err = addOptions(path, opt); err != nil {
@@ -76,6 +99,49 @@ func (c *TerminalsService) GetTerminalsList(ctx context.Context, opt interface{}
 	}
 	if !resp.Success {
 		err = fmt.Errorf("api err: %s", resp.Message)
+	}
+
+	return err
+}
+
+func (c *TerminalsService) CreateTerminal(ctx context.Context, data *NewTerminal, v interface{}) (err error) {
+	path := "terminals"
+
+	if data == nil {
+		return errors.New("can't create terminals on nil data")
+	}
+
+	req, err := c.client.NewRequestCtx(ctx, http.MethodPost, path, data)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode < http.StatusOK && res.StatusCode > 299 {
+		if res.StatusCode == http.StatusUnauthorized {
+			return ErrUnauthorized
+		}
+
+		resp := Response{}
+		err = json.NewDecoder(res.Body).Decode(&resp)
+		if err != nil {
+			return err
+		}
+
+		if !resp.Success {
+			err = fmt.Errorf("api err: %s", resp.Message)
+		}
+
+	} else {
+		err = json.NewDecoder(res.Body).Decode(v)
+		if err != nil {
+			return err
+		}
 	}
 
 	return err
