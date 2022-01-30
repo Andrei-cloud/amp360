@@ -16,7 +16,7 @@ var (
 	terminalsRe = regexp.MustCompile(`^\/terminals\/(\d+)`)
 )
 
-func TestDeleteTerminalMock(t *testing.T) {
+func TestDeleteMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -34,7 +34,7 @@ func TestDeleteTerminalMock(t *testing.T) {
 	})
 
 	wantErr := errors.New("required terminalID is missing")
-	err := c.TerminalsService.DeleteTerminal(context.Background(), 0)
+	err := c.TerminalsService.Delete(context.Background(), 0)
 	if err == nil {
 		t.Errorf("Error is nil, want %v", wantErr)
 	}
@@ -42,13 +42,13 @@ func TestDeleteTerminalMock(t *testing.T) {
 		t.Errorf("Error got %v, want %v", err, wantErr)
 	}
 
-	err = c.TerminalsService.DeleteTerminal(context.Background(), 321)
+	err = c.TerminalsService.Delete(context.Background(), 321)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
 }
 
-func TestUpdateTerminalMock(t *testing.T) {
+func TestUpdateMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -89,7 +89,7 @@ func TestUpdateTerminalMock(t *testing.T) {
 	}
 
 	wantErr := errors.New("required terminalID is missing")
-	err := c.TerminalsService.UpdateTerminal(context.Background(), 0, &ut)
+	err := c.TerminalsService.Update(context.Background(), 0, &ut)
 	if err == nil {
 		t.Errorf("Error is nil, want %v", wantErr)
 	}
@@ -97,13 +97,13 @@ func TestUpdateTerminalMock(t *testing.T) {
 		t.Errorf("Error got %v, want %v", err, wantErr)
 	}
 
-	err = c.TerminalsService.UpdateTerminal(context.Background(), 321, &ut)
+	err = c.TerminalsService.Update(context.Background(), 321, &ut)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
 }
 
-func TestGetTerminalsListMock(t *testing.T) {
+func TestGetListMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -115,7 +115,7 @@ func TestGetTerminalsListMock(t *testing.T) {
 	})
 
 	tl := TerminalsList{}
-	err := c.TerminalsService.GetTerminalsList(context.Background(), nil, &tl)
+	err := c.TerminalsService.GetList(context.Background(), nil, &tl)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -128,7 +128,7 @@ func TestGetTerminalsListMock(t *testing.T) {
 
 }
 
-func TestCreateTerminal_NoTemplateMock(t *testing.T) {
+func TestCreate_NoTemplateMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -164,7 +164,7 @@ func TestCreateTerminal_NoTemplateMock(t *testing.T) {
 		Name:         "value3",
 	}
 	ct := CreatedTerminal{}
-	err := c.TerminalsService.CreateTerminal(context.Background(), &nt, &ct)
+	err := c.TerminalsService.Create(context.Background(), &nt, &ct)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -177,7 +177,7 @@ func TestCreateTerminal_NoTemplateMock(t *testing.T) {
 
 }
 
-func TestCreateTerminal_WithTemplateMock(t *testing.T) {
+func TestCreate_WithTemplateMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -215,7 +215,7 @@ func TestCreateTerminal_WithTemplateMock(t *testing.T) {
 		TemplateID:   "123",
 	}
 	ct := CreatedTerminal{}
-	err := c.TerminalsService.CreateTerminal(context.Background(), &nt, &ct)
+	err := c.TerminalsService.Create(context.Background(), &nt, &ct)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -228,7 +228,7 @@ func TestCreateTerminal_WithTemplateMock(t *testing.T) {
 
 }
 
-func TestCreateTerminal_WithClientMock(t *testing.T) {
+func TestCreate_WithClientMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -266,7 +266,7 @@ func TestCreateTerminal_WithClientMock(t *testing.T) {
 		ClientID:     "test",
 	}
 	ct := CreatedTerminal{}
-	err := c.TerminalsService.CreateTerminal(context.Background(), &nt, &ct)
+	err := c.TerminalsService.Create(context.Background(), &nt, &ct)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -278,7 +278,7 @@ func TestCreateTerminal_WithClientMock(t *testing.T) {
 	}
 }
 
-func TestCreateTerminal_WithParamsMock(t *testing.T) {
+func TestCreate_WithParamsMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -318,7 +318,7 @@ func TestCreateTerminal_WithParamsMock(t *testing.T) {
 		Parameters:   params,
 	}
 	ct := CreatedTerminal{}
-	err := c.TerminalsService.CreateTerminal(context.Background(), &nt, &ct)
+	err := c.TerminalsService.Create(context.Background(), &nt, &ct)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -330,7 +330,7 @@ func TestCreateTerminal_WithParamsMock(t *testing.T) {
 	}
 }
 
-func BenchmarkGetTerminalsListMock(b *testing.B) {
+func BenchmarkGetListMock(b *testing.B) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -341,7 +341,7 @@ func BenchmarkGetTerminalsListMock(b *testing.B) {
 	tl := TerminalsList{}
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		err := c.TerminalsService.GetTerminalsList(context.Background(), nil, &tl)
+		err := c.TerminalsService.GetList(context.Background(), nil, &tl)
 		if err != nil {
 			b.Errorf("Error occured = %v", err)
 		}

@@ -25,7 +25,7 @@ type TerminalModel struct {
 	UpdatedAt           time.Time `json:"updatedAt"`
 }
 
-func (c *ModelsService) GetModelsList(ctx context.Context, v interface{}) (err error) {
+func (c *ModelsService) GetList(ctx context.Context, v interface{}) (err error) {
 	path := "models"
 
 	req, err := c.client.NewRequestCtx(ctx, http.MethodGet, path, nil)

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestGetTemplatesListMock_withLogging(t *testing.T) {
+func TestGetListMock_withLogging(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -19,7 +19,7 @@ func TestGetTemplatesListMock_withLogging(t *testing.T) {
 	})
 
 	tl := TemplateList{}
-	err := c.TemplatesService.GetTemplatesList(context.Background(), nil, &tl)
+	err := c.TemplatesService.GetList(context.Background(), nil, &tl)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}

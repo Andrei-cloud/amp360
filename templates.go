@@ -42,7 +42,7 @@ type AppTemplate struct {
 	FileName  string    `json:"fileName,omitempty"`
 }
 
-func (c *TemplatesService) GetTemplatesList(ctx context.Context, opt interface{}, v interface{}) (err error) {
+func (c *TemplatesService) GetList(ctx context.Context, opt interface{}, v interface{}) (err error) {
 	path := "templates"
 	if path, err = addOptions(path, opt); err != nil {
 		return err

@@ -14,7 +14,7 @@ var (
 	templateReQuery = regexp.MustCompile(`^\/templates\/params\/(\d+)\?categoryId=([a-z0-9\-]+)\&?`)
 )
 
-func TestGetTemplatesParamsMock(t *testing.T) {
+func TestTemplatesGetParamsMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -33,7 +33,7 @@ func TestGetTemplatesParamsMock(t *testing.T) {
 
 	tp := TemplateParams{}
 	wantErr := errors.New("required templateID is missing")
-	err := c.TemplatesService.GetTemplatesParams(context.Background(), "", nil, &tp)
+	err := c.TemplatesService.GetParams(context.Background(), "", nil, &tp)
 	if err == nil {
 		t.Errorf("Error is nil, want %v", wantErr)
 	}
@@ -42,7 +42,7 @@ func TestGetTemplatesParamsMock(t *testing.T) {
 	}
 
 	want := 2
-	err = c.TemplatesService.GetTemplatesParams(context.Background(), "814", nil, &tp)
+	err = c.TemplatesService.GetParams(context.Background(), "814", nil, &tp)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -57,7 +57,7 @@ func TestGetTemplatesParamsMock(t *testing.T) {
 	}
 }
 
-func TestGetTemplatesParamsQueryMock(t *testing.T) {
+func TestTemplatesGetParamsQueryMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -85,7 +85,7 @@ func TestGetTemplatesParamsQueryMock(t *testing.T) {
 	opt := ParamsOpt{
 		CategoryId: "value1",
 	}
-	err := c.TemplatesService.GetTemplatesParams(context.Background(), "814", opt, &tp)
+	err := c.TemplatesService.GetParams(context.Background(), "814", opt, &tp)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}

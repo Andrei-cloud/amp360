@@ -68,7 +68,7 @@ type CreatedTerminal struct {
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
-func (c *TerminalsService) GetTerminalsList(ctx context.Context, opt interface{}, v interface{}) (err error) {
+func (c *TerminalsService) GetList(ctx context.Context, opt interface{}, v interface{}) (err error) {
 	path := "terminals"
 	if path, err = addOptions(path, opt); err != nil {
 		return err
@@ -104,7 +104,7 @@ func (c *TerminalsService) GetTerminalsList(ctx context.Context, opt interface{}
 	return err
 }
 
-func (c *TerminalsService) CreateTerminal(ctx context.Context, data *NewTerminal, v interface{}) (err error) {
+func (c *TerminalsService) Create(ctx context.Context, data *NewTerminal, v interface{}) (err error) {
 	path := "terminals"
 
 	if data == nil {
@@ -147,7 +147,7 @@ func (c *TerminalsService) CreateTerminal(ctx context.Context, data *NewTerminal
 	return err
 }
 
-func (c *TerminalsService) UpdateTerminal(ctx context.Context, id int, data *NewTerminal) (err error) {
+func (c *TerminalsService) Update(ctx context.Context, id int, data *NewTerminal) (err error) {
 	if id == 0 {
 		return errors.New("required terminalID is missing")
 	}
@@ -185,7 +185,7 @@ func (c *TerminalsService) UpdateTerminal(ctx context.Context, id int, data *New
 	return err
 }
 
-func (c *TerminalsService) DeleteTerminal(ctx context.Context, id int) (err error) {
+func (c *TerminalsService) Delete(ctx context.Context, id int) (err error) {
 	if id == 0 {
 		return errors.New("required terminalID is missing")
 	}

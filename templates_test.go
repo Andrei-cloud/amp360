@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestGetTemplatesListMock(t *testing.T) {
+func TestTemplatesGetListMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -19,7 +19,7 @@ func TestGetTemplatesListMock(t *testing.T) {
 	})
 
 	tl := TemplateList{}
-	err := c.TemplatesService.GetTemplatesList(context.Background(), nil, &tl)
+	err := c.TemplatesService.GetList(context.Background(), nil, &tl)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -31,7 +31,7 @@ func TestGetTemplatesListMock(t *testing.T) {
 	}
 }
 
-func TestGetTemplatesListMock_Unauthorizaed(t *testing.T) {
+func TestGetListMock_Unauthorizaed(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -46,7 +46,7 @@ func TestGetTemplatesListMock_Unauthorizaed(t *testing.T) {
 	tl := TemplateList{}
 	want := ErrUnauthorized
 
-	err := c.TemplatesService.GetTemplatesList(context.Background(), nil, &tl)
+	err := c.TemplatesService.GetList(context.Background(), nil, &tl)
 	if err == nil {
 		t.Errorf("Error is = nil, want %v", want)
 	}
@@ -55,7 +55,7 @@ func TestGetTemplatesListMock_Unauthorizaed(t *testing.T) {
 	}
 }
 
-func BenchmarkGetTemplatesListMock(b *testing.B) {
+func BenchmarkTemplatesGetListMock(b *testing.B) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -66,7 +66,7 @@ func BenchmarkGetTemplatesListMock(b *testing.B) {
 	tl := TemplateList{}
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		err := c.TemplatesService.GetTemplatesList(context.Background(), nil, &tl)
+		err := c.TemplatesService.GetList(context.Background(), nil, &tl)
 		if err != nil {
 			b.Errorf("Error occured = %v", err)
 		}

@@ -25,7 +25,7 @@ type CompaniesOpt struct {
 	Page int `url:"page"`
 }
 
-func (c *CompaniesService) GetCompaniesList(ctx context.Context, opt interface{}, v interface{}) (err error) {
+func (c *CompaniesService) GetList(ctx context.Context, opt interface{}, v interface{}) (err error) {
 	path := "client/children"
 	if path, err = addOptions(path, opt); err != nil {
 		return err

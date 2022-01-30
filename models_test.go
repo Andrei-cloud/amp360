@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestGetModelsListMock(t *testing.T) {
+func TestModelsGetListMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -19,7 +19,7 @@ func TestGetModelsListMock(t *testing.T) {
 	})
 
 	ml := ModelsList{}
-	err := c.ModelsService.GetModelsList(context.Background(), &ml)
+	err := c.ModelsService.GetList(context.Background(), &ml)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -32,7 +32,7 @@ func TestGetModelsListMock(t *testing.T) {
 
 }
 
-func BenchmarkGetModelsListMock(b *testing.B) {
+func BenchmarkModelsGetListMock(b *testing.B) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -43,7 +43,7 @@ func BenchmarkGetModelsListMock(b *testing.B) {
 	ml := ModelsList{}
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		err := c.ModelsService.GetModelsList(context.Background(), &ml)
+		err := c.ModelsService.GetList(context.Background(), &ml)
 		if err != nil {
 			b.Errorf("Error occured = %v", err)
 		}

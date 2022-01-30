@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestGetCompaniesListMock(t *testing.T) {
+func TestCompaniesGetListMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -19,7 +19,7 @@ func TestGetCompaniesListMock(t *testing.T) {
 	})
 
 	cl := CompaniesList{}
-	err := c.CompaniesService.GetCompaniesList(context.Background(), nil, &cl)
+	err := c.CompaniesService.GetList(context.Background(), nil, &cl)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
@@ -32,7 +32,7 @@ func TestGetCompaniesListMock(t *testing.T) {
 
 }
 
-func BenchmarkGetCompaniesListMock(b *testing.B) {
+func BenchmarkCompaniesGetListMock(b *testing.B) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
@@ -43,7 +43,7 @@ func BenchmarkGetCompaniesListMock(b *testing.B) {
 	cl := CompaniesList{}
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		err := c.CompaniesService.GetCompaniesList(context.Background(), nil, &cl)
+		err := c.CompaniesService.GetList(context.Background(), nil, &cl)
 		if err != nil {
 			b.Errorf("Error occured = %v", err)
 		}

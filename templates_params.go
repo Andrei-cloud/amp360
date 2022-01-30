@@ -42,7 +42,7 @@ type ParamsOpt struct {
 	CategoryId string `url:"categoryId"`
 }
 
-func (c *TemplatesService) GetTemplatesParams(ctx context.Context, templateID string, opt interface{}, v interface{}) (err error) {
+func (c *TemplatesService) GetParams(ctx context.Context, templateID string, opt interface{}, v interface{}) (err error) {
 	if templateID == "" {
 		return errors.New("required templateID is missing")
 	}
