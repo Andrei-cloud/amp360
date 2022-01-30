@@ -3,12 +3,73 @@ package amp360
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"regexp"
 	"testing"
 )
+
+var (
+	terminalsRe = regexp.MustCompile(`^\/terminals\/(\d+)`)
+)
+
+func TestUpdateTerminalMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if !terminalsRe.MatchString(r.URL.Path) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
+			t.Errorf("Bad URL got %v", r.URL.Path)
+		} else {
+			testMethod(t, r, http.MethodPut)
+			testHeader(t, r, "Content-Type", "application/json")
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("error reading request body: %v", err)
+			}
+
+			values := NewTerminal{}
+			if err := json.Unmarshal(b, &values); err != nil {
+				t.Errorf("invalid body cannot parse %v", err)
+			}
+			want := NewTerminal{
+				Name:     "New name",
+				ClientID: "new client",
+			}
+
+			if !reflect.DeepEqual(values, want) {
+				t.Errorf("invalid body received parsed as %v+", values)
+			}
+			fmt.Fprint(w, `{"success":true,"message":"Successfully updated the terminal.","data":{}}`)
+		}
+	})
+
+	ut := NewTerminal{
+		Name:     "New name",
+		ClientID: "new client",
+	}
+
+	wantErr := errors.New("required terminalID is missing")
+	err := c.TerminalsService.UpdateTerminal(context.Background(), 0, &ut)
+	if err == nil {
+		t.Errorf("Error is nil, want %v", wantErr)
+	}
+	if err.Error() != wantErr.Error() {
+		t.Errorf("Error got %v, want %v", err, wantErr)
+	}
+
+	err = c.TerminalsService.UpdateTerminal(context.Background(), 321, &ut)
+	if err != nil {
+		t.Errorf("Error occured = %v", err)
+	}
+}
 
 func TestGetTerminalsListMock(t *testing.T) {
 	c, mux, _, teardown := setup()

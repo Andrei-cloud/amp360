@@ -146,3 +146,41 @@ func (c *TerminalsService) CreateTerminal(ctx context.Context, data *NewTerminal
 
 	return err
 }
+
+func (c *TerminalsService) UpdateTerminal(ctx context.Context, id int, data *NewTerminal) (err error) {
+	if id == 0 {
+		return errors.New("required terminalID is missing")
+	}
+	path := fmt.Sprintf("terminals/%d", id)
+
+	if data == nil {
+		return errors.New("can't update terminal on nil data")
+	}
+
+	req, err := c.client.NewRequestCtx(ctx, http.MethodPut, path, data)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return ErrUnauthorized
+	}
+
+	resp := Response{}
+	err = json.NewDecoder(res.Body).Decode(&resp)
+	if err != nil {
+		return err
+	}
+
+	if !resp.Success {
+		err = fmt.Errorf("api err: %s", resp.Message)
+	}
+
+	return err
+}
