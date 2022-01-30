@@ -1,6 +1,6 @@
 - add POST templates params bulk  - edit the parameters values of a templates
 √ add POST terminals - Create a terminals
 √ add PUT terminals - Edit terminals name or client
-- add DELETE terminals - Delete a terminals
+√ add DELETE terminals - Delete a terminals
 - add GET terminals params - Get alist of all parameter of the terminal specified
 - add POST terminals params bulk - Edit the parameter value of a terminal

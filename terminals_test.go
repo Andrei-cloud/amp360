@@ -16,6 +16,38 @@ var (
 	terminalsRe = regexp.MustCompile(`^\/terminals\/(\d+)`)
 )
 
+func TestDeleteTerminalMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if !terminalsRe.MatchString(r.URL.Path) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
+			t.Errorf("Bad URL got %v", r.URL.Path)
+		} else {
+			testMethod(t, r, http.MethodDelete)
+			fmt.Fprint(w, `{"success":true,"message":"Successfully deleted the terminal.","data":{}}`)
+		}
+	})
+
+	wantErr := errors.New("required terminalID is missing")
+	err := c.TerminalsService.DeleteTerminal(context.Background(), 0)
+	if err == nil {
+		t.Errorf("Error is nil, want %v", wantErr)
+	}
+	if err.Error() != wantErr.Error() {
+		t.Errorf("Error got %v, want %v", err, wantErr)
+	}
+
+	err = c.TerminalsService.DeleteTerminal(context.Background(), 321)
+	if err != nil {
+		t.Errorf("Error occured = %v", err)
+	}
+}
+
 func TestUpdateTerminalMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
