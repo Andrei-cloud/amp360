@@ -81,6 +81,23 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	return c.NewRequestCtx(context.Background(), method, path, body)
 }
 
+func (c *Client) NewMultiPartRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
+	rel := &url.URL{Path: path}
+	u := c.BaseURL.ResolveReference(rel)
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), body.(io.Reader))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Accept", "application/json; charset=utf-8")
+	req.Header.Add("Authorization", c.apiKey)
+
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
+	}
+	return req, nil
+}
+
 func (c *Client) NewRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 	u := c.BaseURL.ResolveReference(rel)
