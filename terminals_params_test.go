@@ -1,0 +1,98 @@
+package amp360
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"regexp"
+	"testing"
+)
+
+var (
+	terminalRe      = regexp.MustCompile(`^\/terminals\/params\/(\d+)`)
+	terminalReQuery = regexp.MustCompile(`^\/terminals\/params\/(\d+)\?categoryId=([a-z0-9\-]+)\&?`)
+)
+
+func TestTerminalGetParamsMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if !terminalRe.MatchString(r.URL.Path) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
+			t.Errorf("Bad URL got %v", r.URL.Path)
+		} else {
+			testMethod(t, r, http.MethodGet)
+			fmt.Fprint(w, `{"success":true,"message":"Successfully found the template parameters.","data":{"categories":[{"name":"AMP Cloud","id":"6ba90b8c-0340-44fe-82c4-4bc32e51a316"},{"name":"Communications","id":"ca8958a4-8c21-4f82-af4a-58a66ac36e4a"}],"count":2,"rows":[{"id":950024,"type":"STRING","tag":"CLOUD.AUTHCODE","name":"CLOUD.AUTHCODE","hint":"","validator":"","value":"testtoken","defaultValue":"testtoken","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"6ba90b8c-0340-44fe-82c4-4bc32e51a316","categoryName":"AMP Cloud","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"},{"id":950047,"type":"STRING","tag":"COMMUNICATIONS.MEDIA.PRIMARY","name":"COMMUNICATIONS.MEDIA.PRIMARY","hint":"","validator":"","value":"CELLULAR","defaultValue":"CELLULAR","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"ca8958a4-8c21-4f82-af4a-58a66ac36e4a","categoryName":"Communications","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"}]}}`)
+		}
+	})
+
+	tp := TemplateParams{}
+	wantErr := errors.New("required terminalID is missing")
+	err := c.TerminalsService.GetParams(context.Background(), "", nil, &tp)
+	if err == nil {
+		t.Errorf("Error is nil, want %v", wantErr)
+	}
+	if err.Error() != wantErr.Error() {
+		t.Errorf("Error got %v, want %v", err, wantErr)
+	}
+
+	want := 2
+	err = c.TerminalsService.GetParams(context.Background(), "814", nil, &tp)
+	if err != nil {
+		t.Errorf("Error occured = %v", err)
+	}
+	if len(tp.Categories) != want {
+		t.Errorf("Categorues count got %v, wnat %v", len(tp.Categories), want)
+	}
+	if tp.Count != want {
+		t.Errorf("Parameters count got %v, wnat %v", len(tp.Categories), want)
+	}
+	if len(tp.Rows) != want {
+		t.Errorf("Parameters actual count got %v, wnat %v", len(tp.Rows), want)
+	}
+}
+
+func TestTerminalGetParamsQueryMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if !terminalReQuery.MatchString(r.URL.Path) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
+			t.Errorf("Bad URL got %v", r.URL.Path)
+		} else {
+			url, _ := r.URL.Parse(r.URL.Path)
+			testMethod(t, r, http.MethodGet)
+			values := url.Query().Get("categoryId")
+			want := "value1"
+			if values != want {
+				t.Errorf("invalid query received %v, want %v", values, want)
+			}
+			fmt.Fprint(w, `{"success":true,"message":"Successfully found the template parameters.","data":{"categories":[{"name":"AMP Cloud","id":"6ba90b8c-0340-44fe-82c4-4bc32e51a316"}],"count":1,"rows":[{"id":950024,"type":"STRING","tag":"CLOUD.AUTHCODE","name":"CLOUD.AUTHCODE","hint":"","validator":"","value":"testtoken","defaultValue":"testtoken","visibleOnTemplate":1,"visibleOnTerminal":0,"filePath":"","ApplicationId":"763d0d8f-a0fd-4fa6-97e3-e44028305ba3","ParamCategoryId":"6ba90b8c-0340-44fe-82c4-4bc32e51a316","categoryName":"AMP Cloud","updatedAt":"2021-11-18T06:18:22.000Z","createdAt":"2021-11-18T06:18:22.000Z"}]}}`)
+		}
+
+	})
+
+	tp := TemplateParams{}
+	opt := ParamsOpt{
+		CategoryId: "value1",
+	}
+	err := c.TerminalsService.GetParams(context.Background(), "814", opt, &tp)
+	if err != nil {
+		t.Errorf("Error occured = %v", err)
+	}
+
+	want := 1
+
+	if tp.Count != want {
+		t.Errorf("Terminal parameters count = %v, want %v", tp.Count, want)
+	}
+}
