@@ -5,9 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"reflect"
 	"sync"
 
@@ -78,10 +82,10 @@ func (c *Client) Client() *http.Client {
 }
 
 func (c *Client) NewRequest(method, path string, body interface{}) (*http.Request, error) {
-	return c.NewRequestCtx(context.Background(), method, path, body)
+	return c.newRequestCtx(context.Background(), method, path, body)
 }
 
-func (c *Client) NewMultiPartRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
+func (c *Client) newMultiPartRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 	u := c.BaseURL.ResolveReference(rel)
 	req, err := http.NewRequestWithContext(ctx, method, u.String(), body.(io.Reader))
@@ -98,7 +102,7 @@ func (c *Client) NewMultiPartRequestCtx(ctx context.Context, method, path string
 	return req, nil
 }
 
-func (c *Client) NewRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
+func (c *Client) newRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 	u := c.BaseURL.ResolveReference(rel)
 	var buf io.ReadWriter
@@ -124,6 +128,95 @@ func (c *Client) NewRequestCtx(ctx context.Context, method, path string, body in
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
 	return req, nil
+}
+
+func (c *Client) processRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
+	req, err := c.newRequestCtx(ctx, method, path, body)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	resp := Response{
+		Data: result,
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&resp)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return ErrUnauthorized
+	}
+	if !resp.Success {
+		err = fmt.Errorf("api err: %s", resp.Message)
+	}
+
+	return err
+}
+
+func (c *Client) processBulkRequest(ctx context.Context, method, path string, params map[string]string, paramfiles map[string]string, u, f interface{}) error {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	for p, filePath := range paramfiles {
+		file, err := os.Open(filePath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		part, err := writer.CreateFormFile(p, filepath.Base(file.Name()))
+		if err != nil {
+			return err
+		}
+		io.Copy(part, file)
+		if err != nil {
+			return err
+		}
+	}
+
+	for key, val := range params {
+		_ = writer.WriteField(key, val)
+	}
+
+	writer.Close()
+	req, err := c.newMultiPartRequestCtx(ctx, method, path, body)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode == http.StatusNotFound {
+		return ErrNotFound
+	}
+
+	resp := BulkResponse{
+		Failed:  f,
+		Updated: u,
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&resp)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return ErrUnauthorized
+	}
+	if !resp.Success {
+		err = fmt.Errorf("api err: %s", resp.Message)
+	}
+	return err
 }
 
 func (c *Client) Do(req *http.Request) (*http.Response, error) {

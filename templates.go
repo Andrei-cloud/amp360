@@ -48,7 +48,7 @@ func (c *TemplatesService) GetList(ctx context.Context, opt interface{}, v inter
 		return err
 	}
 
-	req, err := c.client.NewRequestCtx(ctx, http.MethodGet, path, nil)
+	req, err := c.client.newRequestCtx(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}

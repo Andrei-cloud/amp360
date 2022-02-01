@@ -74,34 +74,7 @@ func (c *TerminalsService) GetList(ctx context.Context, opt interface{}, v inter
 		return err
 	}
 
-	req, err := c.client.NewRequestCtx(ctx, http.MethodGet, path, nil)
-	if err != nil {
-		return err
-	}
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	resp := Response{
-		Data: v,
-	}
-
-	err = json.NewDecoder(res.Body).Decode(&resp)
-	if err != nil {
-		return err
-	}
-
-	if res.StatusCode == http.StatusUnauthorized {
-		return ErrUnauthorized
-	}
-	if !resp.Success {
-		err = fmt.Errorf("api err: %s", resp.Message)
-	}
-
-	return err
+	return c.client.processRequest(ctx, http.MethodGet, path, nil, v)
 }
 
 func (c *TerminalsService) Create(ctx context.Context, data *NewTerminal, v interface{}) (err error) {
@@ -111,7 +84,7 @@ func (c *TerminalsService) Create(ctx context.Context, data *NewTerminal, v inte
 		return errors.New("can't create terminals on nil data")
 	}
 
-	req, err := c.client.NewRequestCtx(ctx, http.MethodPost, path, data)
+	req, err := c.client.newRequestCtx(ctx, http.MethodPost, path, data)
 	if err != nil {
 		return err
 	}
@@ -157,32 +130,7 @@ func (c *TerminalsService) Update(ctx context.Context, id int, data *NewTerminal
 		return errors.New("can't update terminal on nil data")
 	}
 
-	req, err := c.client.NewRequestCtx(ctx, http.MethodPut, path, data)
-	if err != nil {
-		return err
-	}
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode == http.StatusUnauthorized {
-		return ErrUnauthorized
-	}
-
-	resp := Response{}
-	err = json.NewDecoder(res.Body).Decode(&resp)
-	if err != nil {
-		return err
-	}
-
-	if !resp.Success {
-		err = fmt.Errorf("api err: %s", resp.Message)
-	}
-
-	return err
+	return c.client.processRequest(ctx, http.MethodPut, path, data, nil)
 }
 
 func (c *TerminalsService) Delete(ctx context.Context, id int) (err error) {
@@ -190,30 +138,6 @@ func (c *TerminalsService) Delete(ctx context.Context, id int) (err error) {
 		return errors.New("required terminalID is missing")
 	}
 	path := fmt.Sprintf("terminals/%d", id)
-	req, err := c.client.NewRequestCtx(ctx, http.MethodDelete, path, nil)
-	if err != nil {
-		return err
-	}
 
-	res, err := c.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode == http.StatusUnauthorized {
-		return ErrUnauthorized
-	}
-
-	resp := Response{}
-	err = json.NewDecoder(res.Body).Decode(&resp)
-	if err != nil {
-		return err
-	}
-
-	if !resp.Success {
-		err = fmt.Errorf("api err: %s", resp.Message)
-	}
-
-	return err
+	return c.client.processRequest(ctx, http.MethodDelete, path, nil, nil)
 }
