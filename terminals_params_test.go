@@ -96,3 +96,55 @@ func TestTerminalGetParamsQueryMock(t *testing.T) {
 		t.Errorf("Terminal parameters count = %v, want %v", tp.Count, want)
 	}
 }
+
+func TestTerminalsUpdateParamsMock(t *testing.T) {
+	c, mux, _, teardown := setup()
+	defer teardown()
+
+	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		want := "value2"
+		if !terminalRe.MatchString(r.URL.Path) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
+			t.Errorf("Bad URL got %v", r.URL.Path)
+		} else {
+			testMethod(t, r, http.MethodPost)
+			if r.PostFormValue("param2") != want {
+				t.Errorf("incorrect form value got %v, want %v", r.PostFormValue("param2"), want)
+			}
+			fmt.Fprint(w, `{"success":true,"message":"Successfully updated 3 parameter(s) and propagated the changes to 2 terminals.","failed":["string"],"updated":["string"]}`)
+		}
+	})
+
+	wantErr := errors.New("required terminalID is missing")
+
+	updated := []string{}
+	failed := []string{}
+	params := map[string]string{}
+	files := map[string]string{}
+
+	err := c.TerminalsService.UpdateParams(context.Background(), "", params, files, &updated, &failed)
+	if err == nil {
+		t.Errorf("Error is nil, want %v", wantErr)
+	}
+	if err.Error() != wantErr.Error() {
+		t.Errorf("Error got %v, want %v", err, wantErr)
+	}
+
+	params["param1"] = "value1"
+	params["param2"] = "value2"
+	params["param3"] = "value3"
+	files["TODO"] = "./TODO"
+	err = c.TerminalsService.UpdateParams(context.Background(), "814", params, files, &updated, &failed)
+	if err != nil {
+		t.Errorf("Error occured = %v", err)
+	}
+	if updated[0] != "string" {
+		t.Errorf("updated is incorrect got %v, want \"string\"", updated[0])
+	}
+	if failed[0] != "string" {
+		t.Errorf("failed is incorrect got %v, want \"string\"", failed[0])
+	}
+}
