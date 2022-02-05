@@ -42,8 +42,12 @@ type TerminalsList struct {
 }
 
 type TerminalsOpt struct {
-	Size int `url:"size"`
-	Page int `url:"page"`
+	ID           int    `url:"id"`
+	SerialNumber string `url:"serialNumber"`
+	TID          string `url:"tid"`
+	MID          string `url:"mid"`
+	Size         int    `url:"size"`
+	Page         int    `url:"page"`
 }
 
 type NewTerminal struct {
