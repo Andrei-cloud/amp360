@@ -42,12 +42,12 @@ type TerminalsList struct {
 }
 
 type TerminalsOpt struct {
-	ID           int    `url:"id"`
-	SerialNumber string `url:"serialNumber"`
-	TID          string `url:"tid"`
-	MID          string `url:"mid"`
-	Size         int    `url:"size"`
-	Page         int    `url:"page"`
+	ID           int    `url:"id,omitempty"`
+	SerialNumber string `url:"serialNumber,omitempty"`
+	TID          string `url:"tid,omitempty"`
+	MID          string `url:"mid,omitempty"`
+	Size         int    `url:"size,omitempty"`
+	Page         int    `url:"page,omitempty"`
 }
 
 type NewTerminal struct {
