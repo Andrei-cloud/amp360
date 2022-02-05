@@ -128,33 +128,33 @@ func TestGetListMock(t *testing.T) {
 
 }
 
-func TestGetListOptMock(t *testing.T) {
+func TestGetDetailsMock(t *testing.T) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
 	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
 
-	mux.HandleFunc("/terminals", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/terminals/details", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, http.MethodGet)
-		fmt.Fprint(w, `{"success":true,"message":"Successfully found the terminals.","data":{"count":1,"rows":[{"id":25,"serialNumber":"8000044499","status":"Pending download","name":"Test Terminal 9","imei":null,"ethernetMAC":null,"wifiMAC":null,"bluetoothMAC":null,"cloudAuthCode":null,"queueFirmware":false,"createdAt":"2021-12-27T05:01:56.000Z","updatedAt":"2021-12-27T05:01:56.000Z","AppTemplateId":814,"ClientId":"test_client","FirmwareId":"test_firmware","TerminalModelId":"test1","AppTemplate":{"id":814,"name":"APITEST","createdAt":"2021-11-18T06:17:45.000Z"},"Client":{"id":"test_client","name":"TEST","originPath":"test"}}]}}`)
+		fmt.Fprint(w, `{"success":true,"message":"Successfully found the terminal details.","data":{"templateDetails":[{"id":393,"createdAt":"2021-10-30T04:29:58.000Z","updatedAt":"2021-10-30T04:29:58.000Z","AppTemplateId":234,"ApplicationId":"6fa5752f","AppTemplate":{"id":234,"name":"TEST-Template-22","createdAt":"2021-10-30T04:29:58.000Z"},"Application":{"id":"6fa5752f","name":"TEST","version":"v02.02.022","state":"Testing","type":"Payment","fileName":"AMP POS v02.02.022_TESTta_01.00.001.apk"}}],"terminal":{"id":151,"serialNumber":"8000000789","status":"Migrated","name":"98765432","imei":null,"ethernetMAC":null,"wifiMAC":null,"bluetoothMAC":null,"cloudAuthCode":"","queueFirmware":0,"createdAt":"2021-10-30T04:29:58.000Z","updatedAt":"2021-10-30T04:29:58.000Z","AppTemplateId":234,"ClientId":"07d018a5","FirmwareId":"2a0f80ef","TerminalModelId":"10af3b83","Firmware":{"id":"2a0f80ef","name":"AMP8000-2AA","version":"03.02.39","isLatest":1,"createdAt":"2021-10-30T00:55:39.000Z"},"TerminalModel":{"id":"10af3b83","name":"AMP8000","hardwareId":"2AA","createdAt":"2021-10-30T00:55:39.000Z"}}}}`)
 	})
 
-	tl := TerminalsList{}
+	term := Details{}
 	opt := &TerminalsOpt{
 		ID:           0,
 		SerialNumber: "80002456",
 		TID:          "",
 		MID:          "",
 	}
-	err := c.TerminalsService.GetList(context.Background(), opt, &tl)
+	err := c.TerminalsService.GetDetails(context.Background(), opt, &term)
 	if err != nil {
 		t.Errorf("Error occured = %v", err)
 	}
 
-	want := 1
+	want := 151
 
-	if tl.Count != want {
-		t.Errorf("Terminals count = %v, want %v", tl.Count, want)
+	if term.Terminal.ID != want {
+		t.Errorf("Terminals ID = %v, want %v", term.Terminal.ID, want)
 	}
 
 }
