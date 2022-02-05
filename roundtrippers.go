@@ -7,14 +7,14 @@ import (
 )
 
 type LoggingRoundTripper struct {
-	wrapped http.RoundTripper
+	Wrapped http.RoundTripper
 }
 
 func (l LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	fmt.Printf("Resquest: | %v | %v | \n", req.Method, req.URL)
 
 	start := time.Now()
-	res, err = l.wrapped.RoundTrip(req)
+	res, err = l.Wrapped.RoundTrip(req)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	} else {
