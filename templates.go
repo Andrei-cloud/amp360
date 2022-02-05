@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -44,11 +45,12 @@ type AppTemplate struct {
 
 func (c *TemplatesService) GetList(ctx context.Context, opt interface{}, v interface{}) (err error) {
 	path := "templates"
-	if path, err = addOptions(path, opt); err != nil {
+	var url *url.URL
+	if url, err = addOptions(path, opt); err != nil {
 		return err
 	}
 
-	req, err := c.client.newRequestCtx(ctx, http.MethodGet, path, nil)
+	req, err := c.client.newRequestCtx(ctx, http.MethodGet, *url, nil)
 	if err != nil {
 		return err
 	}

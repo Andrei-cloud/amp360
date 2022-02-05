@@ -64,14 +64,13 @@ func TestTemplatesGetParamsQueryMock(t *testing.T) {
 	c.client.Transport = LoggingRoundTripper{http.DefaultTransport}
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if !templateReQuery.MatchString(r.URL.Path) {
+		if !templateReQuery.MatchString(r.URL.String()) {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
 			t.Errorf("Bad URL got %v", r.URL.Path)
 		} else {
-			url, _ := r.URL.Parse(r.URL.Path)
 			testMethod(t, r, http.MethodGet)
-			values := url.Query().Get("categoryId")
+			values := r.URL.Query().Get("categoryId")
 			want := "value1"
 			if values != want {
 				t.Errorf("invalid query received %v, want %v", values, want)

@@ -51,6 +51,13 @@ func NewClient(defaultBaseURL string, httpClient *http.Client) *Client {
 	return c
 }
 
+type Logger interface {
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+}
+
 type Client struct {
 	clientMu sync.Mutex
 	client   *http.Client
@@ -73,6 +80,10 @@ func (c *Client) SetAPIKey(apiKey string) {
 	c.apiKey = apiKey
 }
 
+func (c *Client) SetTransport(roundTripper http.RoundTripper) {
+	c.client.Transport = roundTripper
+}
+
 // Client returns the http.Client used by this AMP360 client.
 func (c *Client) Client() *http.Client {
 	c.clientMu.Lock()
@@ -81,13 +92,13 @@ func (c *Client) Client() *http.Client {
 	return &clientCopy
 }
 
-func (c *Client) NewRequest(method, path string, body interface{}) (*http.Request, error) {
+func (c *Client) NewRequest(method string, path url.URL, body interface{}) (*http.Request, error) {
 	return c.newRequestCtx(context.Background(), method, path, body)
 }
 
-func (c *Client) newMultiPartRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
-	rel := &url.URL{Path: path}
-	u := c.BaseURL.ResolveReference(rel)
+func (c *Client) newMultiPartRequestCtx(ctx context.Context, method string, path url.URL, body interface{}) (*http.Request, error) {
+	//rel := &url.URL{Path: path}
+	u := c.BaseURL.ResolveReference(&path)
 	req, err := http.NewRequestWithContext(ctx, method, u.String(), body.(io.Reader))
 	if err != nil {
 		return nil, err
@@ -102,9 +113,9 @@ func (c *Client) newMultiPartRequestCtx(ctx context.Context, method, path string
 	return req, nil
 }
 
-func (c *Client) newRequestCtx(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
-	rel := &url.URL{Path: path}
-	u := c.BaseURL.ResolveReference(rel)
+func (c *Client) newRequestCtx(ctx context.Context, method string, path url.URL, body interface{}) (*http.Request, error) {
+	//rel := &url.URL{Path: path}
+	u := c.BaseURL.ResolveReference(&path)
 	var buf io.ReadWriter
 	if body != nil {
 		buf = new(bytes.Buffer)
@@ -130,7 +141,7 @@ func (c *Client) newRequestCtx(ctx context.Context, method, path string, body in
 	return req, nil
 }
 
-func (c *Client) processRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
+func (c *Client) processRequest(ctx context.Context, method string, path url.URL, body interface{}, result interface{}) error {
 	req, err := c.newRequestCtx(ctx, method, path, body)
 	if err != nil {
 		return err
@@ -161,7 +172,7 @@ func (c *Client) processRequest(ctx context.Context, method, path string, body i
 	return err
 }
 
-func (c *Client) processBulkRequest(ctx context.Context, method, path string, params map[string]string, paramfiles map[string]string, u, f interface{}) error {
+func (c *Client) processBulkRequest(ctx context.Context, method string, path url.URL, params map[string]string, paramfiles map[string]string, u, f interface{}) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
@@ -234,19 +245,19 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-func addOptions(s string, opt interface{}) (string, error) {
+func addOptions(s string, opt interface{}) (*url.URL, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {
-		return s, nil
+		return &url.URL{Path: s}, nil
 	}
 	u, err := url.Parse(s)
 	if err != nil {
-		return s, err
+		return &url.URL{Path: s}, err
 	}
 	vs, err := query.Values(opt)
 	if err != nil {
-		return s, err
+		return &url.URL{Path: s}, err
 	}
 	u.RawQuery = vs.Encode()
-	return u.String(), nil
+	return u, nil
 }

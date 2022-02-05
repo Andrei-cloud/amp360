@@ -3,6 +3,7 @@ package amp360
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -25,6 +26,6 @@ type TerminalModel struct {
 
 func (c *ModelsService) GetList(ctx context.Context, v interface{}) (err error) {
 	path := "models"
-
-	return c.client.processRequest(ctx, http.MethodGet, path, nil, v)
+	url := url.URL{Path: path}
+	return c.client.processRequest(ctx, http.MethodGet, url, nil, v)
 }

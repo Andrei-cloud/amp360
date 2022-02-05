@@ -84,7 +84,8 @@ func TestNewRequest(t *testing.T) {
 
 	inURL, outURL := "user-agent", defaultBase+"user-agent"
 	inBody, outBody := map[string]string{"user-agent": defaultUA}, `{"user-agent":`+`"`+defaultUA+`"}`+"\n"
-	req, _ := c.NewRequest("GET", inURL, inBody)
+	url := url.URL{Path: inURL}
+	req, _ := c.NewRequest("GET", url, inBody)
 
 	// test that relative URL was expanded
 	if got, want := req.URL.String(), outURL; got != want {
@@ -109,7 +110,9 @@ func TestNewRequest_invalidJSON(t *testing.T) {
 	type T struct {
 		A map[interface{}]interface{}
 	}
-	_, err := c.NewRequest("GET", ".", &T{})
+	path := "."
+	url := url.URL{Path: path}
+	_, err := c.NewRequest("GET", url, &T{})
 
 	if err == nil {
 		t.Error("Expected error to be returned.")
@@ -131,8 +134,9 @@ func TestDo(t *testing.T) {
 		testMethod(t, r, "GET")
 		fmt.Fprint(w, `{"A":"a"}`)
 	})
-
-	req, _ := client.NewRequest(http.MethodGet, ".", nil)
+	path := "."
+	url := url.URL{Path: path}
+	req, _ := client.NewRequest(http.MethodGet, url, nil)
 	body := new(foo)
 
 	r, e := client.Do(req)

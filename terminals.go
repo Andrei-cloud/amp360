@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -74,21 +75,22 @@ type CreatedTerminal struct {
 
 func (c *TerminalsService) GetList(ctx context.Context, opt interface{}, v interface{}) (err error) {
 	path := "terminals"
-	if path, err = addOptions(path, opt); err != nil {
+	var url *url.URL
+	if url, err = addOptions(path, opt); err != nil {
 		return err
 	}
 
-	return c.client.processRequest(ctx, http.MethodGet, path, nil, v)
+	return c.client.processRequest(ctx, http.MethodGet, *url, nil, v)
 }
 
 func (c *TerminalsService) Create(ctx context.Context, data *NewTerminal, v interface{}) (err error) {
 	path := "terminals"
-
+	rel := &url.URL{Path: path}
 	if data == nil {
 		return errors.New("can't create terminals on nil data")
 	}
 
-	req, err := c.client.newRequestCtx(ctx, http.MethodPost, path, data)
+	req, err := c.client.newRequestCtx(ctx, http.MethodPost, *rel, data)
 	if err != nil {
 		return err
 	}
@@ -133,8 +135,8 @@ func (c *TerminalsService) Update(ctx context.Context, id int, data *NewTerminal
 	if data == nil {
 		return errors.New("can't update terminal on nil data")
 	}
-
-	return c.client.processRequest(ctx, http.MethodPut, path, data, nil)
+	url := url.URL{Path: path}
+	return c.client.processRequest(ctx, http.MethodPut, url, data, nil)
 }
 
 func (c *TerminalsService) Delete(ctx context.Context, id int) (err error) {
@@ -142,6 +144,6 @@ func (c *TerminalsService) Delete(ctx context.Context, id int) (err error) {
 		return errors.New("required terminalID is missing")
 	}
 	path := fmt.Sprintf("terminals/%d", id)
-
-	return c.client.processRequest(ctx, http.MethodDelete, path, nil, nil)
+	url := url.URL{Path: path}
+	return c.client.processRequest(ctx, http.MethodDelete, url, nil, nil)
 }

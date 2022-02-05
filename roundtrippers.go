@@ -11,7 +11,7 @@ type LoggingRoundTripper struct {
 }
 
 func (l LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response, err error) {
-	fmt.Printf("Resquest: | %v | %v | \n", req.Method, req.URL)
+	fmt.Printf("Resquest: | %v | %s | \n", req.Method, req.URL.String())
 
 	start := time.Now()
 	res, err = l.Wrapped.RoundTrip(req)

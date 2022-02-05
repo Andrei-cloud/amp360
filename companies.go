@@ -3,6 +3,7 @@ package amp360
 import (
 	"context"
 	"net/http"
+	"net/url"
 )
 
 type CompaniesService service
@@ -25,9 +26,10 @@ type CompaniesOpt struct {
 
 func (c *CompaniesService) GetList(ctx context.Context, opt interface{}, v interface{}) (err error) {
 	path := "client/children"
-	if path, err = addOptions(path, opt); err != nil {
+	var url *url.URL
+	if url, err = addOptions(path, opt); err != nil {
 		return err
 	}
 
-	return c.client.processRequest(ctx, http.MethodGet, path, nil, v)
+	return c.client.processRequest(ctx, http.MethodGet, *url, nil, v)
 }
