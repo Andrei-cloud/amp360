@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	libraryVersion = "0.1"
+	libraryVersion = "0.1.0"
 	defaultBase    = "https://api.amp360.amobilepayment.com/v1/"
 	devBase        = "https://dev.api.amp360.amobilepayment.com/v1/"
 	defaultUA      = "go-amp360-client/" + libraryVersion
