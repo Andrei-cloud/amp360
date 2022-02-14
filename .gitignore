@@ -11,32 +11,3 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-vendor/modules.txt
-.gitignore
-vendor/github.com/google/go-cmp/LICENSE
-vendor/github.com/google/go-cmp/cmp/compare.go
-vendor/github.com/google/go-cmp/cmp/export_panic.go
-vendor/github.com/google/go-cmp/cmp/export_unsafe.go
-vendor/github.com/google/go-cmp/cmp/options.go
-vendor/github.com/google/go-cmp/cmp/path.go
-vendor/github.com/google/go-cmp/cmp/report_compare.go
-vendor/github.com/google/go-cmp/cmp/report_references.go
-vendor/github.com/google/go-cmp/cmp/report_reflect.go
-vendor/github.com/google/go-cmp/cmp/report_slices.go
-vendor/github.com/google/go-cmp/cmp/report_text.go
-vendor/github.com/google/go-cmp/cmp/report_value.go
-vendor/github.com/google/go-cmp/cmp/report.go
-vendor/github.com/google/go-cmp/cmp/internal/diff/debug_disable.go
-vendor/github.com/google/go-cmp/cmp/internal/diff/debug_enable.go
-vendor/github.com/google/go-cmp/cmp/internal/diff/diff.go
-vendor/github.com/google/go-cmp/cmp/internal/flags/flags.go
-vendor/github.com/google/go-cmp/cmp/internal/function/func.go
-vendor/github.com/google/go-cmp/cmp/internal/value/name.go
-vendor/github.com/google/go-cmp/cmp/internal/value/pointer_purego.go
-vendor/github.com/google/go-cmp/cmp/internal/value/pointer_unsafe.go
-vendor/github.com/google/go-cmp/cmp/internal/value/sort.go
-vendor/github.com/google/go-cmp/cmp/internal/value/zero.go
-vendor/github.com/google/go-querystring/LICENSE
-vendor/github.com/google/go-querystring/query/encode.go
