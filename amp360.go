@@ -152,6 +152,9 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 		return err
 	}
 	defer res.Body.Close()
+	if res.StatusCode == http.StatusNotFound {
+		return ErrNotFound
+	}
 
 	resp := Response{
 		Data: result,
