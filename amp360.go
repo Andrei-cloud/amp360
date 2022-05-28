@@ -13,21 +13,23 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/google/go-querystring/query"
 )
 
 const (
-	libraryVersion = "0.1.0"
+	libraryVersion = "0.1"
 	defaultBase    = "https://api.amp360.amobilepayment.com/v1/"
 	devBase        = "https://dev.api.amp360.amobilepayment.com/v1/"
 	defaultUA      = "go-amp360-client/" + libraryVersion
 )
 
 var (
-	ErrUnauthorized = errors.New("api: unauthorized access")
-	ErrNotFound     = errors.New("api: not found")
+	ErrUnauthorized   = errors.New("api: unauthorized access")
+	ErrNotFound       = errors.New("api: not found")
+	ErrEntityNotFound = errors.New("api: entity not found")
 )
 
 func NewClient(defaultBaseURL string, httpClient *http.Client) *Client {
@@ -152,9 +154,6 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 		return err
 	}
 	defer res.Body.Close()
-	if res.StatusCode == http.StatusNotFound {
-		return ErrNotFound
-	}
 
 	resp := Response{
 		Data: result,
@@ -169,7 +168,11 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 		return ErrUnauthorized
 	}
 	if !resp.Success {
-		err = fmt.Errorf("api err: %s", resp.Message)
+		if strings.Contains(resp.Message, "Failed to find") {
+			err = ErrEntityNotFound
+		} else {
+			err = fmt.Errorf("api err: %s", resp.Message)
+		}
 	}
 
 	return err
@@ -196,7 +199,10 @@ func (c *Client) processBulkRequest(ctx context.Context, method string, path url
 	}
 
 	for key, val := range params {
-		_ = writer.WriteField(key, val)
+		err := writer.WriteField(key, val)
+		if err != nil {
+			return err
+		}
 	}
 
 	writer.Close()

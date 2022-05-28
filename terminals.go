@@ -52,12 +52,12 @@ type TerminalsOpt struct {
 }
 
 type NewTerminal struct {
-	ModelID      interface{}            `json:"modelId,omitempty"`
-	SerialNumber string                 `json:"serialNumber,omitempty"`
+	ModelID      interface{}            `json:"modelId"`
+	SerialNumber string                 `json:"serialNumber"`
 	Name         string                 `json:"name"`
 	ClientID     interface{}            `json:"clientId,omitempty"`
 	TemplateID   string                 `json:"templateId,omitempty"`
-	Parameters   map[string]interface{} `json:"parameters,omitempty"`
+	Parameters   map[string]interface{} `json:"parameters"`
 }
 
 type CreatedTerminal struct {
