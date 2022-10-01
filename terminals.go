@@ -2,7 +2,6 @@ package amp360
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -52,23 +51,26 @@ type TerminalsOpt struct {
 }
 
 type NewTerminal struct {
-	ModelID      interface{}            `json:"modelId"`
-	SerialNumber string                 `json:"serialNumber"`
-	Name         string                 `json:"name"`
-	ClientID     interface{}            `json:"clientId,omitempty"`
-	TemplateID   string                 `json:"templateId,omitempty"`
-	Parameters   map[string]interface{} `json:"parameters"`
+	ModelID       interface{}            `json:"modelId"`
+	SerialNumber  string                 `json:"serialNumber"`
+	Name          string                 `json:"name"`
+	ClientID      interface{}            `json:"clientId,omitempty"`
+	TemplateID    string                 `json:"templateId,omitempty"`
+	ActivateCloud bool                   `json:"activateCloud,omitempty"`
+	CloudAuthCode string                 `json:"customAuthCode,omitempty"`
+	Parameters    map[string]interface{} `json:"parameters"`
 }
 
 type CreatedTerminal struct {
 	ID              int       `json:"id"`
-	AppTemplateID   int       `json:"AppTemplateId"`
+	AppTemplateID   string    `json:"AppTemplateId"`
 	ClientID        string    `json:"ClientId"`
 	FirmwareID      string    `json:"FirmwareId"`
 	TerminalModelID string    `json:"TerminalModelId"`
 	SerialNumber    string    `json:"serialNumber"`
 	Name            string    `json:"name"`
 	Status          string    `json:"status"`
+	CloudAuthCode   string    `json:"cloudAuthCode,omitempty"`
 	CreatedAt       time.Time `json:"createdAt"`
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
@@ -85,45 +87,12 @@ func (c *TerminalsService) GetList(ctx context.Context, opt interface{}, v inter
 
 func (c *TerminalsService) Create(ctx context.Context, data *NewTerminal, v interface{}) (err error) {
 	path := "terminals"
-	rel := &url.URL{Path: path}
+	rel := url.URL{Path: path}
 	if data == nil {
 		return errors.New("can't create terminals on nil data")
 	}
 
-	req, err := c.client.newRequestCtx(ctx, http.MethodPost, *rel, data)
-	if err != nil {
-		return err
-	}
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode < http.StatusOK && res.StatusCode > 299 {
-		if res.StatusCode == http.StatusUnauthorized {
-			return ErrUnauthorized
-		}
-
-		resp := Response{}
-		err = json.NewDecoder(res.Body).Decode(&resp)
-		if err != nil {
-			return err
-		}
-
-		if !resp.Success {
-			err = fmt.Errorf("api err: %s", resp.Message)
-		}
-
-	} else {
-		err = json.NewDecoder(res.Body).Decode(v)
-		if err != nil {
-			return err
-		}
-	}
-
-	return err
+	return c.client.processRequest(ctx, http.MethodPost, rel, data, v)
 }
 
 func (c *TerminalsService) Update(ctx context.Context, id int, data *NewTerminal) (err error) {

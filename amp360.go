@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -20,16 +19,10 @@ import (
 )
 
 const (
-	libraryVersion = "0.2"
+	libraryVersion = "0.5"
 	defaultBase    = "https://api.amp360.amobilepayment.com/v1/"
 	devBase        = "https://dev.api.amp360.amobilepayment.com/v1/"
 	defaultUA      = "go-amp360-client/" + libraryVersion
-)
-
-var (
-	ErrUnauthorized   = errors.New("api: unauthorized access")
-	ErrNotFound       = errors.New("api: not found")
-	ErrEntityNotFound = errors.New("api: entity not found")
 )
 
 func NewClient(defaultBaseURL string, httpClient *http.Client) *Client {
@@ -99,7 +92,6 @@ func (c *Client) NewRequest(method string, path url.URL, body interface{}) (*htt
 }
 
 func (c *Client) newMultiPartRequestCtx(ctx context.Context, method string, path url.URL, body interface{}) (*http.Request, error) {
-	//rel := &url.URL{Path: path}
 	u := c.BaseURL.ResolveReference(&path)
 	req, err := http.NewRequestWithContext(ctx, method, u.String(), body.(io.Reader))
 	if err != nil {
@@ -116,7 +108,6 @@ func (c *Client) newMultiPartRequestCtx(ctx context.Context, method string, path
 }
 
 func (c *Client) newRequestCtx(ctx context.Context, method string, path url.URL, body interface{}) (*http.Request, error) {
-	//rel := &url.URL{Path: path}
 	u := c.BaseURL.ResolveReference(&path)
 	var buf io.ReadWriter
 	if body != nil {
@@ -163,16 +154,26 @@ func (c *Client) processRequest(ctx context.Context, method string, path url.URL
 	if err != nil {
 		return err
 	}
-
-	if res.StatusCode == http.StatusUnauthorized {
-		return ErrUnauthorized
-	}
-	if !resp.Success {
+	switch res.StatusCode {
+	case http.StatusOK:
+		return err
+	case http.StatusBadRequest:
+		return fmt.Errorf("api err: %s", resp.Message)
+	case http.StatusUnauthorized:
+		err = ErrIvalidToken
+	case http.StatusForbidden:
+		err = ErrNoPermission
+	case http.StatusConflict:
+		err = ErrConflict
+	case http.StatusNotFound:
+		err = ErrEntityNotFound
+	case http.StatusBadGateway:
 		if strings.Contains(resp.Message, "Failed to find") {
-			err = ErrEntityNotFound
-		} else {
-			err = fmt.Errorf("api err: %s", resp.Message)
+			return ErrEntityNotFound
 		}
+		return fmt.Errorf("api err: %s", resp.Message)
+	default:
+		err = ErrUnknown
 	}
 
 	return err

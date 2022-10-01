@@ -11,6 +11,7 @@ import (
 
 var (
 	terminalRe      = regexp.MustCompile(`^\/terminals\/params\/(\d+)`)
+	terminalBulkRe  = regexp.MustCompile(`^\/terminals\/params\/bulk\/(\d+)`)
 	terminalReQuery = regexp.MustCompile(`^\/terminals\/params\/(\d+)\?categoryId=([a-z0-9\-]+)\&?`)
 )
 
@@ -104,7 +105,7 @@ func TestTerminalsUpdateParamsMock(t *testing.T) {
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		want := "value2"
-		if !terminalRe.MatchString(r.URL.Path) {
+		if !terminalBulkRe.MatchString(r.URL.Path) {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, `{"success":false,"message":"bad request","data":{}}`)
 			t.Errorf("Bad URL got %v", r.URL.Path)
