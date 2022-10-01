@@ -36,7 +36,7 @@ func BenchmarkModelsGetListMock(b *testing.B) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
-	mux.HandleFunc("/models", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/models", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, `{"success":true,"message":"Successfully found available terminal models.","data":{"count":3,"rows":[{"name":"TEST1","id":"test1","hardwareId":"CD","maintenanceInterval":180,"jointName":"TEST1-CD","createdAt":"2021-10-30T00:55:39.000Z"},{"name":"TEST2","id":"test2","hardwareId":"2AA","maintenanceInterval":180,"jointName":"TEST2-2AA","createdAt":"2021-10-30T00:55:39.000Z"},{"name":"TEST3","id":"test3","hardwareId":"2AA","maintenanceInterval":180,"jointName":"TEST3-2AA","createdAt":"2021-10-30T00:55:39.000Z"}]}}`)
 	})
 

@@ -1,4 +1,4 @@
-module github.com/andrei-cloud/amp360
+module amp360api
 
 go 1.17
 

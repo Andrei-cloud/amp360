@@ -36,7 +36,7 @@ func BenchmarkCompaniesGetListMock(b *testing.B) {
 	c, mux, _, teardown := setup()
 	defer teardown()
 
-	mux.HandleFunc("/client/children", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/client/children", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, `{"success":true,"message":"Successfully fetched sub-clients.","data":{"count":2,"rows":[{"id":"test1","name":"TEST 1","type":"MERCHANT"},{"id":"test2","name":"TEST2","type":"MERCHANT"}]}}`)
 	})
 
