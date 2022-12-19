@@ -32,6 +32,9 @@ func NewClient(defaultBaseURL string, httpClient *http.Client) *Client {
 	if defaultBaseURL == "" {
 		defaultBaseURL = defaultBase
 	}
+	if defaultBaseURL == "dev" {
+		defaultBaseURL = devBase
+	}
 
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{
