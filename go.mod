@@ -1,4 +1,4 @@
-module amp360api
+module amp360
 
 go 1.17
 
